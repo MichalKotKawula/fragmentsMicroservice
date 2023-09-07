@@ -1,0 +1,21 @@
+{
+  "name": "fragments",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Fragments back-end API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MichalKotKawula/fragments.git"
+  },
+  "keywords": [],
+  "author": "Michal Kot-Kawula",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/MichalKotKawula/fragments/issues"
+  },
+  "homepage": "https://github.com/MichalKotKawula/fragments#readme"
+}
