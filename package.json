@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/MichalKotKawula/fragments/issues"
   },
-  "homepage": "https://github.com/MichalKotKawula/fragments#readme"
+  "homepage": "https://github.com/MichalKotKawula/fragments#readme",
+  "devDependencies": {
+    "prettier": "~3.0.3"
+  }
 }
