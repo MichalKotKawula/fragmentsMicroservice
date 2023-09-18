@@ -26,10 +26,18 @@ app.use(helmet());
 // Use CORS middleware so we can make requests across origins
 app.use(cors());
 
+const passport = require('passport');
+
+const authenticate = require('./auth');
+
 // Use gzip/deflate compression middleware
 app.use(compression());
 
-// Define a simple health check route. If the server is running
+// Set up our passport authentication middleware
+passport.use(authenticate.strategy());
+app.use(passport.initialize());
+
+// Define our routes
 app.use('/', require('./routes'));
 
 // Add 404 middleware to handle any requests for resources that can't be found
