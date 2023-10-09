@@ -1,6 +1,6 @@
 const httpMocks = require('node-mocks-http');
 const { Fragment } = require('../../src/model/fragment');
-const post = require('../../src/routes/api/post'); // Correct the path based on the file structure
+const post = require('../../src/routes/api/post');
 
 jest.mock('../../src/model/fragment');
 
