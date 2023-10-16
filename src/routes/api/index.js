@@ -5,9 +5,9 @@
  */
 const express = require('express');
 const contentType = require('content-type');
-
+const logger = require('../../logger');
 //Assignment 1
-const Fragment = require('../../model/fragment');
+const { Fragment } = require('../../model/fragment');
 const rawBody = () =>
   express.raw({
     inflate: true,
@@ -16,8 +16,12 @@ const rawBody = () =>
       // See if we can parse this content type. If we can, `req.body` will be
       // a Buffer (e.g., `Buffer.isBuffer(req.body) === true`). If not, `req.body`
       // will be equal to an empty Object `{}` and `Buffer.isBuffer(req.body) === false`
-      const { type } = contentType.parse(req);
-      return Fragment.isSupportedType(type);
+      try {
+        const { type } = contentType.parse(req);
+        return Fragment.isSupportedType(type);
+      } catch (err) {
+        logger.error(err);
+      }
     },
   });
 // End of Assignment 1 modification
@@ -30,5 +34,7 @@ router.get('/fragments', require('./get'));
 
 // Other routes will go here later on...
 router.post('/fragments', rawBody(), require('./post'));
+// Get fragments by id
+router.get('/fragments/:id', require('./getById'));
 
 module.exports = router;

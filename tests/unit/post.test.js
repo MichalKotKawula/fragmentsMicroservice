@@ -1,123 +1,101 @@
-const httpMocks = require('node-mocks-http');
-const { Fragment } = require('../../src/model/fragment');
-const post = require('../../src/routes/api/post');
+const request = require('supertest');
+const app = require('../../src/app');
+const { createErrorResponse } = require('../../src/response');
 
-jest.mock('../../src/model/fragment');
+describe('POST /v1/fragments', () => {
+  //  If the request is missing the Authorization header, it should be forbidden
+  test('unauthenticated requests are denied', () => request(app).post('/v1/fragments').expect(401));
 
-describe('POST fragment', () => {
-  it('should reject an invalid request body', async () => {
-    const req = httpMocks.createRequest({ body: 'Invalid' });
-    const res = httpMocks.createResponse();
-    await post(req, res);
+  // If the wrong username/password pair are used (no such user), it should be forbidden
+  test('incorrect credentials are denied', () =>
+    request(app).post('/v1/fragments').auth('invalid@email.com', 'incorrect_password').expect(401));
 
-    expect(res.statusCode).toBe(400);
+  // An authenticated user is able to create a plain text fragment
+  test('authenticated user can create a fragment', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/plain')
+      .send('This is a fragment');
+
+    expect(res.statusCode).toBe(201);
   });
 
-  it('should reject unsupported media types', async () => {
-    Fragment.isSupportedType.mockReturnValue(false);
-    const req = httpMocks.createRequest({
-      // eslint-disable-next-line no-undef
-      body: Buffer.from('test'),
-      headers: { 'content-type': 'invalid/type' },
-    });
-    const res = httpMocks.createResponse();
-    await post(req, res);
-
-    expect(res.statusCode).toBe(415);
-  });
-
-  it('should reject unauthenticated requests', async () => {
-    const req = httpMocks.createRequest({
-      // eslint-disable-next-line no-undef
-      body: Buffer.from('test'),
-      headers: { 'content-type': 'valid/type' },
-    });
-    const res = httpMocks.createResponse();
-    Fragment.isSupportedType.mockReturnValue(true);
-    await post(req, res);
+  test('unauthenticated user cannot create a fragment', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('invalid_user@email.com', 'password1')
+      .set('Content-Type', 'text/plain')
+      .send('Unauthenticated fragment');
 
     expect(res.statusCode).toBe(401);
   });
 
-  it('should create a plain text fragment for authenticated users', async () => {
-    const req = httpMocks.createRequest({
-      user: { id: '123' },
-      // eslint-disable-next-line no-undef
-      body: Buffer.from('test'),
-      headers: { 'content-type': 'text/plain' },
-    });
-    const res = httpMocks.createResponse();
-    const mockFragment = {
-      id: 'fragmentId',
-      ownerId: '123',
-      created: Date.now(),
-      updated: Date.now(),
-      type: 'text/plain',
-      size: 4,
-      setData: jest.fn(),
-    };
-    Fragment.mockReturnValue(mockFragment);
-    Fragment.isSupportedType.mockReturnValue(true);
-    await post(req, res);
+  test('response includes a Location header with URL', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user2@email.com', 'password2')
+      .set('Content-Type', 'text/plain')
+      .send('This is a fragment');
 
-    // eslint-disable-next-line no-undef
-    expect(mockFragment.setData).toHaveBeenCalledWith(Buffer.from('test'));
     expect(res.statusCode).toBe(201);
-    const responseData = JSON.parse(res._getData());
-    expect(responseData).toMatchObject({
-      id: 'fragmentId',
-      ownerId: '123',
-      type: 'text/plain',
-      size: 4,
-    });
+    expect(res.headers.location).toMatch(
+      /\/v1\/fragments\/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/
+    );
   });
 
-  let mockFragment;
-
-  beforeEach(() => {
-    mockFragment = {
-      id: 'fragmentId',
-      ownerId: '123',
-      created: Date.now(),
-      updated: Date.now(),
-      type: 'text/plain',
-      size: 4,
-      setData: jest.fn(),
-    };
-
-    Fragment.mockReturnValue(mockFragment);
-    Fragment.isSupportedType.mockReturnValue(true);
-  });
-
-  it('should set the Location header based on API_URL', async () => {
-    // eslint-disable-next-line no-undef
-    process.env.API_URL = 'http://api.example.com';
-
-    const req = httpMocks.createRequest({
-      user: { id: '123' },
+  test('unsupported fragment type generates 415 error', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'video/ogg')
       // eslint-disable-next-line no-undef
-      body: Buffer.from('test'),
-      headers: { 'content-type': 'text/plain' },
-    });
-    const res = httpMocks.createResponse();
-    await post(req, res);
+      .send(Buffer.from('TEST FRAGMENT'));
 
-    expect(res.getHeader('Location')).toBe('http://api.example.com/fragments/fragmentId');
+    const errorResponse = createErrorResponse(415, 'UNSUPPORTED_CONTENT_TYPE');
+    expect(res.statusCode).toBe(415);
+    expect(res.body).toStrictEqual(errorResponse);
   });
 
-  it('should fall back to request host if API_URL is not set', async () => {
-    // eslint-disable-next-line no-undef
-    delete process.env.API_URL;
-
-    const req = httpMocks.createRequest({
-      user: { id: '123' },
+  test('a fragment cannot contain invalid data ', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/plain')
       // eslint-disable-next-line no-undef
-      body: Buffer.from('test'),
-      headers: { 'content-type': 'text/plain', host: 'localhost:8080' },
-    });
-    const res = httpMocks.createResponse();
-    await post(req, res);
+      .send(Buffer.from(' '));
 
-    expect(res.getHeader('Location')).toBe('http://localhost:8080/fragments/fragmentId');
+    expect(res.statusCode).toBe(400);
+  });
+
+  test('success response contains fragment data', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/plain')
+      .send('This is a fragment');
+
+    expect(res.statusCode).toBe(201);
+  });
+
+  test('creating a fragment object with no data generates 400 error', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/plain')
+      .send('');
+
+    const errorResponse = createErrorResponse(400, 'EMPTY_DATA');
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toStrictEqual(errorResponse);
+  });
+
+  test('creating a fragment without specifying content-type generates 415 error', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', '\t')
+      .send('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+    expect(res.statusCode).toBe(415);
   });
 });

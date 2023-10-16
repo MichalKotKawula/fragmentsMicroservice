@@ -21,7 +21,7 @@ app.use(pino);
 
 // Use helmetjs security middleware
 app.use(helmet());
-
+app.disable('etag');
 // Use CORS middleware so we can make requests across origins
 app.use(cors());
 

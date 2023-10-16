@@ -26,9 +26,13 @@ router.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   // Send a 200 'OK' response
 
-  res
-    .status(200)
-    .json(successResponse({ author, githubUrl: 'https://github.com/yourname/fragments', version }));
+  res.status(200).json(
+    successResponse({
+      author,
+      githubUrl: 'https://github.com/MichalKotKawula/fragments',
+      version,
+    })
+  );
 });
 
 module.exports = router;

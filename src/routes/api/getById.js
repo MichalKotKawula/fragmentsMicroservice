@@ -1,25 +1,93 @@
-const { createSuccessResponse, createErrorResponse } = require('../../response');
-const logger = require('../../logger');
+// src/routes/api/get.js
+const crypto = require('crypto');
 const { Fragment } = require('../../model/fragment');
-
+// Use https://www.npmjs.com/package/content-type to create/parse Content-Type headers
+// const contentType = require('content-type');
 /**
- * Get a list of fragments belonging to the current user.
- * Can be an array of fragment IDs, an array of fragment metadata, or error
+ * Get a list of fragments for the current user
  */
-module.exports = async (req, res) => {
-  try {
-    let data;
+const createErrorResponse = require('../../response').createErrorResponse;
 
-    if (req.originalUrl === '/v1/fragments') {
-      data = { fragments: await Fragment.byUser(req.user) };
-      return res.status(200).json(createSuccessResponse(data));
-    } else if (req.originalUrl === '/v1/fragments?expand=1') {
-      data = { fragments: await Fragment.byUser(req.user, true) };
-      return res.status(200).json(createSuccessResponse(data));
+function validConversion(contentType, extension) {
+  let formats = [];
+  switch (contentType) {
+    case 'text/plain':
+      formats = ['.txt'];
+      break;
+    default:
+      return false;
+  }
+
+  const includeExt = (element) => element.includes(extension);
+
+  return formats.some(includeExt);
+}
+
+module.exports = async (req, res) => {
+  const idWithExt = req.params.id;
+  let user = crypto.createHash('sha256').update(req.user).digest('hex');
+
+  const idWithExtArray = idWithExt.split('.');
+
+  let id;
+  let ext;
+
+  if (idWithExtArray.length > 1) {
+    id = idWithExtArray.slice(0, idWithExtArray.length - 1).join('.');
+    ext = idWithExtArray[idWithExtArray.length - 1];
+  } else {
+    id = idWithExtArray[0];
+    ext = null;
+  }
+
+  const idList = await Fragment.byUser(user);
+
+  if (idList.includes(id)) {
+    const fragmentObject = await Fragment.byId(user, id);
+    let fragment;
+
+    if (fragmentObject instanceof Fragment) {
+      fragment = fragmentObject;
+    } else {
+      fragment = new Fragment({
+        id: id,
+        ownerId: fragmentObject.ownerId,
+        created: fragmentObject.created,
+        update: fragmentObject.update,
+        type: fragmentObject.type,
+        size: fragmentObject.size,
+      });
     }
-    return res.status(404).json(createErrorResponse(404, `Invalid URL`));
-  } catch (err) {
-    logger.error(err);
-    return err;
+
+    if (fragment) {
+      let dataResult = null;
+
+      if (!ext) {
+        dataResult = await fragment.getData();
+      } else {
+        if (validConversion(fragment.mimeType, ext)) {
+          dataResult = await fragment.getData();
+        }
+      }
+
+      if (dataResult) {
+        res.setHeader('Content-Type', fragment.mimeType);
+        res.status(200).send(dataResult);
+      } else {
+        const error = 'Cannot convert from ' + fragment.mimeType + ' to ' + ext;
+        createErrorResponse(
+          res.status(415).json({
+            code: 415,
+            message: error,
+          })
+        );
+      }
+    }
+  } else {
+    createErrorResponse(
+      res.status(404).json({
+        message: 'Not found id!',
+      })
+    );
   }
 };
