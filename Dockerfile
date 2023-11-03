@@ -49,7 +49,8 @@ COPY --from=dependencies /app /app
 COPY . .
 
 # Run the server
-CMD npm start
+USER node
+CMD ["node", "./src/server.js"]
 EXPOSE 8080
 
 
