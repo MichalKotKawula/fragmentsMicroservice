@@ -12,4 +12,5 @@ describe('hash()', () => {
     const email = 'user1@example.com';
     expect(hash(email)).toEqual(hash(email));
   });
+  //
 });
