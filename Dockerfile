@@ -26,7 +26,8 @@ WORKDIR /app
 # COPY package*.json /app/
 
 # Copy our HTPASSWD file
-COPY ./tests/.htpasswd ./tests/.htpasswd
+COPY --chown=node:node package*.json . \
+    ./tests/.htpasswd ./
 
 RUN npm ci --only=production
 
