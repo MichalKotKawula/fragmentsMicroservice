@@ -2,16 +2,16 @@
 
 #Stage: 0 
 
-FROM node:18.17.1  AS dependencies
+FROM node:18.17.1@sha256:933bcfad91e9052a02bc29eb5aa29033e542afac4174f9524b79066d97b23c24  AS dependencies
 
 LABEL maintainer="Michal Kot-Kawula <mkot-kawula@myseneca.ca>"
 LABEL description="Fragments node.js microservice"
 
 
-ENV NODE_ENV=production
+# ENV NODE_ENV=production
 
-# We default to use port 8080 in our service
-ENV PORT=8080
+# # We default to use port 8080 in our service
+# ENV PORT=8080
 
 # Reduce npm spam when installing within Docker
 # https://docs.npmjs.com/cli/v8/using-npm/config#loglevel
@@ -29,28 +29,34 @@ WORKDIR /app
 # that `app` is a directory and not a file.
 COPY package*.json /app/
 
-# Copy src/
-COPY ./src ./src
+# # Copy src/
+# COPY ./src ./src
 
 # Copy our HTPASSWD file
 COPY ./tests/.htpasswd ./tests/.htpasswd
 
-RUN npm install
+RUN npm ci --only=production
 
 ######################################
-#Stage 1
-FROM node:18.17.1  AS deploy
+#Stage 1 building
 
+FROM node:18.17.1@sha256:933bcfad91e9052a02bc29eb5aa29033e542afac4174f9524b79066d97b23c24  AS builder
+
+ENV NODE_ENV production
+
+COPY --chown=node:node --from=dependencies /app /app
 
 WORKDIR /app
 
-COPY --from=dependencies /app /app
+COPY --chown=node:node ./src ./src
 
-COPY . .
 
-# Run the server
+######################################
+#Stage 2 running
+
 USER node
 CMD ["node", "./src/server.js"]
 EXPOSE 8080
 
-
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl --fail localhost:8080 || exit 1

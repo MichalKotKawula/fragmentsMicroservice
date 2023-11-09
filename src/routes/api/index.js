@@ -34,7 +34,11 @@ router.get('/fragments', require('./get'));
 
 // Other routes will go here later on...
 router.post('/fragments', rawBody(), require('./post'));
+
 // Get fragments by id
 router.get('/fragments/:id', require('./getById'));
+
+// GET /fragments/:id/info
+router.get('/fragments/:id/info', require('./getUserMetadata'));
 
 module.exports = router;

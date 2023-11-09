@@ -4,6 +4,7 @@ const { randomUUID } = require('crypto');
 // Use https://www.npmjs.com/package/content-type to create/parse Content-Type headers
 const contentType = require('content-type');
 
+const md = require('markdown-it')();
 // Functions for working with fragment metadata/data using our DB
 const {
   readFragment,
@@ -128,7 +129,35 @@ class Fragment {
    * @returns {Array<string>} list of supported mime types
    */
   get formats() {
-    return [this.mimeType];
+    const { type } = contentType.parse(this.type);
+    switch (type) {
+      case 'text/plain':
+        return ['text/plain'];
+      case 'text/markdown':
+        return ['text/markdown', 'text/html', 'text/plain'];
+      case 'text/html':
+        return ['text/html', 'text/plain'];
+      case 'application/json':
+        return ['application/json', 'text/plain'];
+      default:
+        return [];
+    }
+  }
+
+  async convertData(convertTo) {
+    // To convert the fragment's data,
+
+    if (Fragment.isSupportedType(convertTo) && this.formats.includes(convertTo)) {
+      const { type } = contentType.parse(this.type);
+      const data = await this.getData();
+
+      if (type === 'text/markdown' && convertTo === 'text/html') {
+        return md.render(data.toString());
+      }
+      // An extension can be the fragment's current type OR the extension is .txt --> return the unmodified data
+      // Converting to plain text does not require further modification
+      return data;
+    }
   }
 
   /**
@@ -138,7 +167,7 @@ class Fragment {
    */
 
   static isSupportedType(type) {
-    const validTypes = ['text/plain'];
+    const validTypes = ['text/markdown', 'text/html', 'text/plain', 'application/json'];
     const parsedType = contentType.parse(type).type;
     return validTypes.includes(parsedType);
   }
