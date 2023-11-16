@@ -49,8 +49,10 @@ COPY --chown=node:node ./src ./src
 #Stage 2 running
 
 USER node
+
 CMD ["node", "./src/server.js"]
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl --fail localhost:8080 || exit 1
+
