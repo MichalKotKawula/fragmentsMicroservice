@@ -10,6 +10,8 @@ const router = express.Router();
 
 const { authenticate } = require('../auth');
 
+const { hostname } = require('os');
+
 const successResponse = require('../response').createSuccessResponse;
 
 /**
@@ -31,6 +33,8 @@ router.get('/', (req, res) => {
       author,
       githubUrl: 'https://github.com/MichalKotKawula/fragments',
       version,
+      // Include the hostname in the response
+      hostname: hostname(),
     })
   );
 });
