@@ -57,6 +57,7 @@ jobs:
           # Define an Environment Variable with our ECR Registry, getting
           # the value from the previous step's outputs
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
           # Define an Environment Variable with our ECR Repository Name
           ECR_REPO: fragments
           # We'll give this image two different tags. First, we'll use the git tag (vX.Y.Z)
