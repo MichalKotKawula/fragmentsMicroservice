@@ -39,6 +39,10 @@
           "value": "us-east-1"
         },
         {
+          "name": "AWS_S3_BUCKET_NAME",
+          "value": "mkot-kawula-fragments"
+        },
+        {
           "name": "PORT",
           "value": "8080"
         }
@@ -76,7 +80,7 @@
   ],
   "placementConstraints": [],
   "memory": "512",
-  "taskRoleArn": null,
+  "taskRoleArn": "arn:aws:iam::634689875310:role/LabRole",
   "compatibilities": ["EC2", "FARGATE"],
   "taskDefinitionArn": "arn:aws:ecs:us-east-1:634689875310:task-definition/fragments-task:1",
   "family": "fragments-task",
