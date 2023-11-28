@@ -69,9 +69,9 @@ jobs:
           tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}, ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:latest
 
           # We need to update our fragment's Task Definition JSON
-      # (i.e., fragments-definition.json) to use the newly
-      # updated Docker Image to use (i.e., the tag we just pushed to ECR).
-      # We can also update/set the environment variables if we want.
+          # (i.e., fragments-definition.json) to use the newly
+          # updated Docker Image to use (i.e., the tag we just pushed to ECR).
+           # We can also update/set the environment variables if we want.
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: update-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -97,8 +97,8 @@ jobs:
             AWS_COGNITO_CLIENT_ID=${{ secrets.AWS_COGNITO_CLIENT_ID }}
             API_URL=${{ secrets.API_URL }}
 
-      # Deploy the updated Task Definition to Amazon ECS
-        - name: Deploy Amazon ECS task definition
+          # Deploy the updated Task Definition to Amazon ECS
+      - name: Deploy Amazon ECS task definition
             uses: aws-actions/amazon-ecs-deploy-task-definition@v1
             with:
               task-definition: ${{ steps.update-task-def.outputs.task-definition }}
