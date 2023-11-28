@@ -59,7 +59,7 @@ jobs:
           ECR_REPO: fragments
           # We'll give this image two different tags. First, we'll use the git tag (vX.Y.Z)
           # so that we can always go back and re-create this setup again in the future
-          # if we have to test or debug something. Second, we'll also replace the
+          # if we have to test or debug something. Second, fwe'll also replace the
           # `latest` tag, since this is our most up-to-date version.
           VERSION_TAG: ${{ github.ref_name }}
         uses: docker/build-push-action@v4
