@@ -33,7 +33,7 @@ const getCredentials = () => {
 };
 
 /**
- * If an AWS S3 Endpoint is configured in the environment, use it.
+ * If an AWS S3 Endpoint is configured in the environment, use dit.
  * @returns string | undefined
  */
 const getS3Endpoint = () => {
