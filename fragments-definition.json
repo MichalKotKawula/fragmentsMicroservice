@@ -27,6 +27,10 @@
       "cpu": 256,
       "environment": [
         {
+          "name": "API_URL",
+          "value": "http://localhost:8080"
+        },
+        {
           "name": "AWS_COGNITO_CLIENT_ID",
           "value": "7blp7fhe51op6pelbo7ja459ie"
         },
@@ -58,7 +62,7 @@
       "memoryReservation": 512,
       "volumesFrom": [],
       "stopTimeout": null,
-      "image": "https://hub.docker.com/layers/thewolfyt07/fragments:latest",
+      "image": "thewolfyt07/fragments:latest",
       "startTimeout": null,
       "firelensConfiguration": null,
       "dependsOn": null,
@@ -80,9 +84,9 @@
   ],
   "placementConstraints": [],
   "memory": "512",
-  "taskRoleArn": "arn:aws:iam::634689875310:role/LabRole",
+  "taskRoleArn": null,
   "compatibilities": ["EC2", "FARGATE"],
-  "taskDefinitionArn": "arn:aws:ecs:us-east-1:634689875310:task-definition/fragments-task:1",
+  "taskDefinitionArn": "arn:aws:ecs:us-east-1:634689875310:task-definition/fragments-task:10",
   "family": "fragments-task",
   "requiresAttributes": [
     {
@@ -127,7 +131,7 @@
   "networkMode": "awsvpc",
   "runtimePlatform": null,
   "cpu": "256",
-  "revision": 1,
+  "revision": 10,
   "status": "ACTIVE",
   "inferenceAccelerators": null,
   "proxyConfiguration": null,
