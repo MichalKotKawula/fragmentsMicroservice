@@ -40,7 +40,7 @@ jobs:
           # Use our GitHub Encrypted Secrets via secrets.*
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           # Hard-code our region, which isn't a secret, and won't change
           aws-region: us-east-1
 
@@ -99,7 +99,7 @@ jobs:
 
           # Deploy the updated Task Definition to Amazon ECS
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1.4.2
         with:
           task-definition: ${{ steps.update-task-def.outputs.task-definition }}
           cluster: fragments-cluster
