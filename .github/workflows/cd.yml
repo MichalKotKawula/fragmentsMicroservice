@@ -99,7 +99,7 @@ jobs:
 
           # Deploy the updated Task Definition to Amazon ECS
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1.4.2
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1.4.11
         with:
           task-definition: ${{ steps.update-task-def.outputs.task-definition }}
           cluster: fragments-cluster
