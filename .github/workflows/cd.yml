@@ -93,8 +93,8 @@ jobs:
           environment-variables: |
             LOG_LEVEL=info
             NODE_ENV=production
-            AWS_COGNITO_POOL_ID=${{ secrets.AWS_COGNITO_POOL_ID }}
-            AWS_COGNITO_CLIENT_ID=${{ secrets.AWS_COGNITO_CLIENT_ID }}
+          #AWS_COGNITO_POOL_ID=${{ secrets.AWS_COGNITO_POOL_ID }}
+          #AWS_COGNITO_CLIENT_ID=${{ secrets.AWS_COGNITO_CLIENT_ID }}
             API_URL=${{ secrets.API_URL }}
 
           # Deploy the updated Task Definition to Amazon ECS
