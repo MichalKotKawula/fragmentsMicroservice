@@ -253,7 +253,7 @@ describe('GET /fragments/:id/info', () => {
 
     const errorResponse = createErrorResponse(
       404,
-      `Error: Fragment not found. Got ID ${fragment1.id}.txt`
+      `Error: fragment does not exist for this user. Got ID ${fragment1.id}.txt`
     );
     expect(res.statusCode).toBe(404);
     expect(res.body).toEqual(errorResponse);
