@@ -56,9 +56,23 @@ class Fragment {
    * @returns Promise<Fragment>
    */
   static async byId(ownerId, id) {
-    const fragment = await readFragment(ownerId, id);
-    if (!fragment) {
-      throw new Error('Fragment not found');
+    let fragment = await readFragment(ownerId, id);
+    if (!(await readFragment(ownerId, id))) {
+      throw new Error(`fragment does not exist for this user`);
+    }
+    if (!(fragment instanceof Fragment)) {
+      // Convert to a Fragment object first if retrieving fragment data & metadata from the DB
+      // otherwise, we can't use its methods
+      let fragment2 = new Fragment({
+        ownerId: fragment.ownerId,
+        id: fragment.id,
+        type: fragment.type,
+        size: fragment.size,
+      });
+      // Set these two properties separately since their values are already date strings
+      fragment2.created = fragment.created;
+      fragment2.updated = fragment.updated;
+      return fragment2;
     }
     return fragment;
   }

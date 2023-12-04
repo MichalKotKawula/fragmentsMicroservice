@@ -41,4 +41,7 @@ router.get('/fragments/:id', require('./getById'));
 // GET /fragments/:id/info
 router.get('/fragments/:id/info', require('./getUserMetadata'));
 
+// DELETE /fragments/:id
+router.delete('/fragments/:id', require('./delete'));
+
 module.exports = router;
