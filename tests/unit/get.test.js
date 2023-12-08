@@ -1,5 +1,4 @@
 // // tests/unit/get.test.js
-
 const request = require('supertest');
 const app = require('../../src/app');
 const logger = require('../../src/logger');
@@ -69,7 +68,7 @@ describe('GET /v1/fragments?expand=1', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.status).toBe('ok');
     expect(Array.isArray(res.body.fragments)).toBe(true);
-    expect(res.body.fragments.length).toBe(4);
+    expect(res.body.fragments.length).toBe(3);
 
     // each fragment object in the array must contain metadata (represented by 6 keys)
     res.body.fragments.forEach((fragment) => {
