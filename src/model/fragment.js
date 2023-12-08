@@ -4,6 +4,8 @@ const { randomUUID } = require('crypto');
 // Use https://www.npmjs.com/package/content-type to create/parse Content-Type headers
 const contentType = require('content-type');
 
+const sharp = require('sharp');
+
 const md = require('markdown-it')();
 // Functions for working with fragment metadata/data using our DB
 const {
@@ -113,10 +115,16 @@ class Fragment {
     // eslint-disable-next-line no-undef
     if (!(data instanceof Buffer)) throw new Error('Data should be a Buffer');
 
-    this.size = data.length;
     this.updated = new Date().toISOString();
-    await writeFragmentData(this.ownerId, this.id, data);
-    await this.save();
+    if (this.type.includes('image/jpeg')) {
+      const dataCompressed = await sharp(data).jpeg({ mozjpeg: true }).toBuffer();
+      // eslint-disable-next-line no-undef
+      this.size = Buffer.byteLength(dataCompressed);
+      return writeFragmentData(this.ownerId, this.id, dataCompressed);
+    }
+    // eslint-disable-next-line no-undef
+    this.size = Buffer.byteLength(data);
+    return writeFragmentData(this.ownerId, this.id, data);
   }
 
   /**
@@ -154,7 +162,7 @@ class Fragment {
       case 'application/json':
         return ['application/json', 'text/plain'];
       default:
-        return [];
+        return ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
     }
   }
 
@@ -167,6 +175,8 @@ class Fragment {
 
       if (type === 'text/markdown' && convertTo === 'text/html') {
         return md.render(data.toString());
+      } else if (type !== convertTo && type.includes('image/')) {
+        return sharp(data).toFormat(convertTo.split('/')[1]).toBuffer();
       }
       // An extension can be the fragment's current type OR the extension is .txt --> return the unmodified data
       // Converting to plain text does not require further modification
@@ -181,7 +191,16 @@ class Fragment {
    */
 
   static isSupportedType(type) {
-    const validTypes = ['text/markdown', 'text/html', 'text/plain', 'application/json'];
+    const validTypes = [
+      'text/markdown',
+      'text/html',
+      'text/plain',
+      'application/json',
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/gif',
+    ];
     const parsedType = contentType.parse(type).type;
     return validTypes.includes(parsedType);
   }
